@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Target, Edit2, Trash2, CheckCircle, Save, X, Calendar as CalendarIcon, PlusCircle, MinusCircle, Copy, Repeat } from 'lucide-react';
+import { Target, Edit2, Trash2, CheckCircle, Save, X, Calendar as CalendarIcon, PlusCircle, MinusCircle, Copy, Repeat, Link, GitMerge, ChevronLeft, ChevronRight } from 'lucide-react';
 import { calculateUrgency, getQuadrant, getDifficultyColor, formatDateEuropean } from '../helpers';
 
-const TaskDetails = ({ selectedTask, onEdit, onDelete, onComplete, onToggleToday, onDuplicate, setTasks, tasks }) => {
+const TaskDetails = ({ selectedTask, allTasks, onEdit, onDelete, onComplete, onToggleToday, onDuplicate, setTasks }) => {
   const [editingInline, setEditingInline] = useState(null);
   const [tempTitle, setTempTitle] = useState('');
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
@@ -26,12 +26,16 @@ const TaskDetails = ({ selectedTask, onEdit, onDelete, onComplete, onToggleToday
     );
   }
 
-  const { id, title, description, importance, difficulty, deadline, isToday, repeatDays } = selectedTask;
+  const { id, title, description, importance, difficulty, deadline, isToday, repeatDays, parentId, dependsOn, dependencyStrength } = selectedTask;
   const urgency = calculateUrgency(deadline);
   const quadrant = getQuadrant(importance, urgency);
 
+  const parentTask = parentId ? allTasks.find(t => t.id === parentId) : null;
+  const subtasks = allTasks.filter(t => t.parentId === id);
+  const dependencyTask = dependsOn ? allTasks.find(t => t.id === dependsOn) : null;
+
   const handleInlineEdit = (field, value) => {
-    const updatedTasks = tasks.map(t => t.id === id ? { ...t, [field]: value } : t);
+    const updatedTasks = allTasks.map(t => t.id === id ? { ...t, [field]: value } : t);
     setTasks(updatedTasks);
   };
 
@@ -45,11 +49,19 @@ const TaskDetails = ({ selectedTask, onEdit, onDelete, onComplete, onToggleToday
     setEditingInline(null);
   };
 
+  // NEW: Handler for deadline buttons
+  const handleDeadlineChange = (days) => {
+    const currentDate = new Date(deadline);
+    currentDate.setDate(currentDate.getDate() + days);
+    const newDeadline = currentDate.toISOString().split('T')[0];
+    handleInlineEdit('deadline', newDeadline);
+  };
+
   const isLongDescription = description && description.length > 120;
   const displayedDescription = isLongDescription && !isDescriptionExpanded ? `${description.substring(0, 120)}...` : description;
 
   return (
-    <div className="bg-white rounded-xl shadow-lg border p-6 sticky top-6">
+    <div className="bg-white rounded-xl shadow-lg border p-6 sticky top-6 max-h-[90vh] overflow-y-auto">
       <div className="space-y-4">
         <div className="flex justify-between items-start">
           <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold border-2" style={{ backgroundColor: quadrant.color, borderColor: quadrant.border, color: quadrant.textColor }}>{quadrant.name}</span>
@@ -89,16 +101,46 @@ const TaskDetails = ({ selectedTask, onEdit, onDelete, onComplete, onToggleToday
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-3"><div className="flex items-center justify-between"><span className="text-sm font-semibold text-gray-700">Urgency</span><div className="text-xl font-bold text-orange-600">{urgency}</div></div><div className="w-full bg-gray-200 rounded-full h-2 mt-2"><div className="bg-gradient-to-r from-orange-500 to-red-500 h-2 rounded-full" style={{ width: `${urgency}%` }} /></div></div>
         </div>
         <div className="bg-gray-50 border border-gray-200 rounded-lg p-3"><span className="text-sm font-semibold text-gray-700">Difficulty</span><div className="flex items-center gap-3"><div className="text-xl font-bold text-gray-800">{difficulty}</div><div className="w-full bg-gray-200 rounded-full h-3"><div className="h-3 rounded-full" style={{ width: `${difficulty}%`, backgroundColor: getDifficultyColor(difficulty) }} /></div></div></div>
-        <div className="bg-gray-50 border border-gray-200 rounded-lg p-3"><div className="flex items-center gap-2"><CalendarIcon className="w-4 h-4 text-gray-600" /><span className="text-sm font-semibold text-gray-700">Deadline</span></div><div className="text-lg font-bold text-gray-800">{formatDateEuropean(deadline)}</div></div>
         
-        {/* NEW: Display repeat info */}
+        {/* MODIFIED: Deadline with +/- buttons */}
+        <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2"><CalendarIcon className="w-4 h-4 text-gray-600" /><span className="text-sm font-semibold text-gray-700">Deadline</span></div>
+            <div className="flex items-center gap-1">
+              <button onClick={() => handleDeadlineChange(-1)} className="p-1 rounded-full hover:bg-gray-200"><ChevronLeft size={16} /></button>
+              <div className="text-lg font-bold text-gray-800">{formatDateEuropean(deadline)}</div>
+              <button onClick={() => handleDeadlineChange(1)} className="p-1 rounded-full hover:bg-gray-200"><ChevronRight size={16} /></button>
+            </div>
+          </div>
+        </div>
+        
         {repeatDays > 0 && (
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-            <div className="flex items-center gap-2">
-              <Repeat className="w-4 h-4 text-gray-600" />
-              <span className="text-sm font-semibold text-gray-700">Repeat</span>
-            </div>
+            <div className="flex items-center gap-2"><Repeat className="w-4 h-4 text-gray-600" /><span className="text-sm font-semibold text-gray-700">Repeat</span></div>
             <div className="text-lg font-bold text-gray-800">Every {repeatDays} day{repeatDays > 1 ? 's' : ''}</div>
+          </div>
+        )}
+
+        {parentTask && (
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+            <div className="flex items-center gap-2"><GitMerge className="w-4 h-4 text-gray-600" /><span className="text-sm font-semibold text-gray-700">Subtask of</span></div>
+            <div className="text-lg font-bold text-gray-800">{parentTask.title}</div>
+          </div>
+        )}
+
+        {dependencyTask && (
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+            <div className="flex items-center gap-2"><Link className="w-4 h-4 text-gray-600" /><span className="text-sm font-semibold text-gray-700">Depends on</span></div>
+            <div className="text-lg font-bold text-gray-800">{dependencyTask.title} ({dependencyStrength}%)</div>
+          </div>
+        )}
+
+        {subtasks.length > 0 && (
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+            <div className="flex items-center gap-2 mb-2"><GitMerge className="w-4 h-4 text-gray-600" /><span className="text-sm font-semibold text-gray-700">Subtasks</span></div>
+            <ul className="list-disc list-inside space-y-1">
+              {subtasks.map(st => <li key={st.id} className="text-sm text-gray-800">{st.title}</li>)}
+            </ul>
           </div>
         )}
 

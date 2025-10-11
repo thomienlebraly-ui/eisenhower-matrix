@@ -50,9 +50,9 @@ const App = () => {
     if (!taskToComplete) return;
 
     if (taskToComplete.repeatDays && taskToComplete.repeatDays > 0) {
-      const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + parseInt(taskToComplete.repeatDays));
-      const newDeadline = tomorrow.toISOString().split('T')[0];
+      const newDeadlineDate = new Date(taskToComplete.deadline);
+      newDeadlineDate.setDate(newDeadlineDate.getDate() + parseInt(taskToComplete.repeatDays));
+      const newDeadline = newDeadlineDate.toISOString().split('T')[0];
 
       const newTask = {
         ...taskToComplete,
@@ -72,7 +72,6 @@ const App = () => {
     setSelectedTask(null);
   };
 
-  // NEW: Handler to permanently delete a completed task
   const handleDeleteCompletedTask = (taskId) => {
     if (window.confirm("Are you sure you want to permanently delete this completed task? This cannot be undone.")) {
       setCompletedTasks(completedTasks.filter(t => t.id !== taskId));
@@ -112,51 +111,10 @@ const App = () => {
     ));
   };
 
-  const handleExport = () => {
-    const data = { tasks, completedTasks, retentionDays };
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(JSON.stringify(data, null, 2));
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', 'eisenhower_backup.json');
-    linkElement.click();
-  };
-
-  const handleImport = (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const data = JSON.parse(e.target.result);
-        if (Array.isArray(data)) {
-          setTasks(data);
-          setCompletedTasks([]);
-          alert('Successfully imported old backup file!');
-        } else if (Array.isArray(data.tasks) && Array.isArray(data.completedTasks)) {
-          setTasks(data.tasks);
-          setCompletedTasks(data.completedTasks);
-          setRetentionDays(data.retentionDays || 30);
-          alert('Successfully imported backup file!');
-        } else {
-          alert('Invalid file format.');
-        }
-      } catch (error) { 
-        alert('Error reading or parsing the file.');
-        console.error(error);
-      }
-    };
-    reader.readAsText(file);
-    event.target.value = null;
-  };
-
   return (
     <div className="min-h-screen bg-gray-100 p-4 md:p-6">
       <div className="max-w-7xl mx-auto">
-        <Header 
-          onAddTask={() => openModal()} 
-          onExport={handleExport}
-          onImport={handleImport}
-        />
+        <Header onAddTask={() => openModal()} />
         <Navigation currentPage={currentPage} setCurrentPage={setCurrentPage} />
 
         <main className="mt-6">
@@ -174,7 +132,7 @@ const App = () => {
               onToggleToday={handleToggleToday}
               onDuplicateTask={handleDuplicateTask}
               onCompleteTask={handleCompleteTask}
-              onDeleteCompletedTask={handleDeleteCompletedTask} // MODIFIED: Pass handler
+              onDeleteCompletedTask={handleDeleteCompletedTask}
             />
           )}
           {currentPage === 'today' && (
@@ -198,6 +156,7 @@ const App = () => {
             onSubmit={handleSubmit}
             editingTask={editingTask}
             currentPage={currentPage}
+            allTasks={tasks}
           />
         )}
       </div>

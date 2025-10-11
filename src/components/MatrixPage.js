@@ -1,22 +1,24 @@
 import React, { useState, useMemo } from 'react';
 import { useTaskPositions } from '../hooks/useTaskPositions';
 import { calculateUrgency } from '../helpers';
+import { useLocalStorage } from '../hooks/useLocalStorage';
 
 import MatrixGraph from './MatrixGraph';
 import TaskDetails from './TaskDetails';
 import PriorityList from './PriorityList';
 import CompletedTasksList from './CompletedTasksList';
 import SearchPanel from './SearchPanel';
+import SettingsPanel from './SettingsPanel';
 import { Calendar, Grid } from 'lucide-react';
 
 const MatrixPage = ({ tasks, setTasks, completedTasks, setCompletedTasks, retentionDays, setRetentionDays, selectedTask, setSelectedTask, onEditTask, onToggleToday, onDuplicateTask, onCompleteTask, onDeleteCompletedTask }) => {
   const [showToday, setShowToday] = useState(true);
   const [showOther, setShowOther] = useState(true);
-
   const [searchQuery, setSearchQuery] = useState('');
   const [searchField, setSearchField] = useState('title');
   const [useRegex, setUseRegex] = useState(false);
   const [sortBy, setSortBy] = useState('score');
+  const [defaultExportName, setDefaultExportName] = useLocalStorage('defaultExportName', 'eisenhower_backup.json');
 
   const filteredTasksForGraph = useMemo(() => {
     return tasks.filter(task => {
@@ -84,6 +86,15 @@ const MatrixPage = ({ tasks, setTasks, completedTasks, setCompletedTasks, retent
     setCompletedTasks(completedTasks.filter(t => t.id !== taskId));
   };
 
+  const handleSaveToFile = () => {
+    const data = { tasks, completedTasks, retentionDays, defaultExportName };
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(JSON.stringify(data, null, 2));
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', defaultExportName);
+    linkElement.click();
+  };
+
   return (
     <>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -100,18 +111,19 @@ const MatrixPage = ({ tasks, setTasks, completedTasks, setCompletedTasks, retent
             tasksWithPositions={tasksWithPositions}
             selectedTask={selectedTask}
             onTaskSelect={setSelectedTask}
+            allTasks={tasks}
           />
         </div>
         <div className="lg:col-span-1">
           <TaskDetails 
             selectedTask={tasks.find(t => t.id === selectedTask?.id)}
+            allTasks={tasks}
             onEdit={onEditTask}
             onDelete={handleDeleteTask}
             onComplete={onCompleteTask}
             onToggleToday={onToggleToday}
             onDuplicate={onDuplicateTask}
             setTasks={setTasks}
-            tasks={tasks}
           />
         </div>
       </div>
@@ -139,7 +151,13 @@ const MatrixPage = ({ tasks, setTasks, completedTasks, setCompletedTasks, retent
         retentionDays={retentionDays}
         onSetRetentionDays={setRetentionDays}
         onRestoreTask={handleRestoreTask}
-        onDeleteCompletedTask={onDeleteCompletedTask} // MODIFIED: Pass handler
+        onDeleteCompletedTask={onDeleteCompletedTask}
+      />
+
+      <SettingsPanel 
+        defaultExportName={defaultExportName}
+        setDefaultExportName={setDefaultExportName}
+        onSaveToFile={handleSaveToFile}
       />
     </>
   );

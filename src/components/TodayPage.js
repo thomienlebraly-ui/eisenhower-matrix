@@ -3,8 +3,6 @@ import { getDifficultyColor, getScoreColor, calculateUrgency } from '../helpers'
 import { Clock, Plus, Download } from 'lucide-react';
 import TimeEditModal from './TimeEditModal';
 
-// --- UTILITY FUNCTIONS ---
-
 const timeToMinutes = (time) => {
   if (!time) return 0;
   const [hours, minutes] = time.split(':').map(Number);
@@ -129,7 +127,7 @@ const TodayPage = ({ tasks, onScheduleTask, onUnscheduleTask, onAddTask, onViewD
   }, [resizeState, previewState, onScheduleTask, hours]);
 
   const { unscheduled, layout } = useMemo(() => {
-    const MIN_DURATION_MINUTES = 25;
+    const MIN_DURATION_MINUTES = 40;
     const MAX_RAW_SCORE = Math.pow(100, 2) + 2 * Math.pow(100, 2);
     const tasksWithScores = tasks.map(task => {
       const urgency = calculateUrgency(task.deadline);
@@ -249,7 +247,7 @@ const TodayPage = ({ tasks, onScheduleTask, onUnscheduleTask, onAddTask, onViewD
                 const start = timeToMinutes(task.startTime);
                 const end = timeToMinutes(task.endTime);
                 const duration = end - start;
-                const visualDuration = Math.max(duration, 25);
+                const visualDuration = Math.max(duration, 40);
 
                 const top = timeToYPercent(task.startTime, hours);
                 const height = (visualDuration / (hours.length * 60)) * 100;
@@ -278,7 +276,6 @@ const TodayPage = ({ tasks, onScheduleTask, onUnscheduleTask, onAddTask, onViewD
                   );
                 } else if (taskPixelWidth >= widthNeededForOneLine) {
                   content = (
-                    // MODIFIED: Changed justify-center to justify-start
                     <div className="flex flex-row items-center justify-start h-full gap-2">
                       <p className="font-bold text-sm whitespace-nowrap overflow-hidden text-ellipsis">{task.title}</p>
                       <p className="text-xs whitespace-nowrap">({timeText})</p>
@@ -310,7 +307,6 @@ const TodayPage = ({ tasks, onScheduleTask, onUnscheduleTask, onAddTask, onViewD
                     }}
                   >
                     <div onMouseDown={(e) => handleResizeStart(e, task, 'resize-start')} className="absolute top-0 left-0 w-full h-2 cursor-n-resize z-10"/>
-                    {/* MODIFIED: Padding is now on the inner container */}
                     <div className="flex-grow min-h-0 overflow-hidden p-2">
                       {content}
                     </div>
