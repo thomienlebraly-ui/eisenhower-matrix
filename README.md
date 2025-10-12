@@ -4,6 +4,11 @@
 
 This project goes beyond a simple Eisenhower Matrix. It's a complete system for visualizing task priorities, planning your day with a drag-and-drop timeline, and ensuring you're always working on what matters most.
 
+![Application Screenshot](placeholder.png)
+*(**Note:** You should replace `placeholder.png` with an actual screenshot of your application!)*
+
+---
+
 ## About The Project
 
 The core of this application is the **Eisenhower Matrix**, a productivity principle that helps you prioritize tasks by urgency and importance. This app brings the matrix to life with a dynamic, interactive graph.
@@ -18,6 +23,10 @@ By seamlessly integrating a high-level strategic overview with a detailed tactic
 
 *   **Interactive Matrix Graph:** Visualize all your tasks on the importance/urgency graph. The graph is not static; it's a living canvas.
 *   **Advanced Point & Label Placement:** A smart algorithm prevents points and labels from overlapping. It uses a hybrid approach of circular placement for identical points and a force-directed layout for nearby clusters. Crowded labels are automatically placed with "leader lines" to ensure every task title is always visible and readable.
+*   **Task Relationships:**
+    *   **Dependencies:** Link a task to another it "depends on." A solid line with an arrow will visualize this relationship on the graph.
+    *   **Subtasks:** Assign a task as a "subtask" of a parent. A dotted line will connect them, helping you organize complex projects.
+*   **Deadline Forecast Lines:** Red dotted lines on the graph show you where tasks due "Today," in "1 Week," "2 Weeks," and "1 Month" will appear, helping you anticipate future urgency.
 *   **Dynamic Priority Scoring:** Tasks are sorted in a "Priority To-Do List" using a weighted formula (`score = (urgency² + 2 * importance²) / max`) to surface the most critical items.
 *   **Visual Indicators for 'Today's Tasks':** Tasks scheduled for today are rendered with a distinct "bullseye" style, making them easy to spot on the graph and in the priority list.
 *   **Powerful Search & Sort:** A dedicated panel allows you to instantly filter your task list by any field (title, description, importance, etc.), sort by priority, and even use **regular expressions** for advanced searching.
@@ -35,7 +44,8 @@ By seamlessly integrating a high-level strategic overview with a detailed tactic
 *   **Repeating Tasks:** Set tasks to repeat automatically. When you complete a recurring task, a new one is instantly created with a future deadline, perfect for daily or weekly habits.
 *   **Task Duplication:** Instantly create a copy of any existing task with a "Duplicate" button.
 *   **Full Task Lifecycle:** Includes task completion, a history of completed tasks with a configurable retention period, and the ability to restore or permanently delete old tasks.
-*   **Data Persistence:** Your tasks are automatically saved to your browser's local storage. No need to worry about losing your work.
+*   **Quick Deadline Adjustments:** Use `+` and `-` buttons in the details panel to quickly shift a task's deadline by one day.
+*   **Data Persistence:** Your tasks are automatically saved to your browser's local storage.
 *   **Import & Export:**
     *   Backup and share your entire setup with JSON import/export (backward-compatible with older backup files).
     *   Export your daily schedule to a standard `.ics` (iCal) file to use in Google Calendar, Outlook, or Apple Calendar.
@@ -46,13 +56,13 @@ By seamlessly integrating a high-level strategic overview with a detailed tactic
 
 This tool is designed to support a powerful weekly workflow.
 
-1.  **Strategic Planning (The Matrix Page):** Use the main matrix view to get a "big picture" overview. Add new projects, break them down into smaller tasks, and adjust their importance and deadlines. This is your command center.
+1.  **Strategic Planning (The Matrix Page):** Use the main matrix view to get a "big picture" overview. Add new projects, break them down into smaller tasks using the **subtask** feature, and link any **dependencies**. Adjust importance and deadlines. This is your command center.
 
 2.  **Daily Commitment:** At the start of each day (or the evening before), review your matrix. For tasks you intend to complete, click **"Add to Today's Plan"** in the details panel. This marks them with the special "bullseye" style.
 
 3.  **Daily Execution (The Today's Plan Page):** Switch to the "Today's Plan" page. You'll see your chosen tasks in the "Task Pool," sorted by priority. Drag them onto the timeline to build a concrete, visual schedule for your day.
 
-4.  **The Weekly Review:** Once a week, use the matrix to review your progress. Mark tasks as complete (which will reschedule repeating tasks), break down upcoming projects, and ensure your daily actions are aligned with your long-term goals.
+4.  **The Weekly Review:** Once a week, use the matrix to review your progress. Mark tasks as complete (which will automatically reschedule **repeating tasks**), break down upcoming projects, and ensure your daily actions are aligned with your long-term goals.
 
 ---
 
